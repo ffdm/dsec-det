@@ -12,14 +12,44 @@ split_config = yaml_file_to_dict(Path("./config/train_val_test_split.yaml"))
 
 import os
 
+"""
 dataset = DSECDet(root=Path(os.environ["DSEC"]),
                   split="test",              # can be test/train/val
                   sync="back",               # load 50 ms of event after ('back'), or before  ('front') the image
                   split_config=split_config, # which sequences go into train/val/test. See yaml file for details.
                   debug=True)                # generate debug output, available in output['debug']
+"""
+"""
+dataset = DSECDet(root=Path(os.environ["DSEC"]),
+                  split="train",              # can be test/train/val
+                  sync="back",               # load 50 ms of event after ('back'), or before  ('front') the image
+                  debug=True)                # generate debug output, available in output['debug']
+"""
+
+dataset = DSECDet(root=Path(os.environ["DSEC"]),
+                  split="train",
+                  sync="back",
+                  split_config=split_config,
+                  debug=True)              # can be test/train/val
         
-index = 200
-output = dataset[index]
+
+indices = np.zeros(0)
+for i in range(0, len(dataset)):
+    if (len(dataset[i]['tracks']) == 0):
+        indices = np.append(indices, i)
+
+np.save("empty_indices.npy", indices)
+
+
+
+"""
+print(len(dataset))
+#dataset[15091]
+
+print(len(dataset.directories))
+
+for key in dataset.directories:
+    print(key)
 
 black_image = np.zeros((480,640,3))
 
@@ -28,6 +58,17 @@ events = output['events']
 #print(type(events['t'][0]))
 print(1/((events['t'][-1] - events['t'][0])*1e-6))
 
+for key in output:
+    print(key)
+
+"""
+"""
+for i in range(0, 150):
+    output = dataset[i]
+    print(output['tracks'].size)
+"""
+
+"""
 maximum = 0
 prev = events['t'][0]
 for t in events['t']:
@@ -37,8 +78,10 @@ for t in events['t']:
 
 print(f'Max time step between events: {maximum}')
 print(events['t'][300:310])
+"""
     
 
+"""
 sum = 0
 count = 0
 for index in range(200, 400):
@@ -48,7 +91,6 @@ for index in range(200, 400):
 print(f"Avg detections per fram: {sum/count}")
 
 
-"""
 cv2.imshow("meow", render_events_on_image(black_image, x=events['x'], y=events['y'],
         p=events['p']))
 cv2.waitKey(0)
